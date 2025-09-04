@@ -32,7 +32,7 @@ A structured logging solution for Go applications using zap gologger. This packa
 - **Configurable Log Levels**: Debug, Info, Warn, Error
 - **Structured Logging**: JSON format with timestamps and caller information
 - **Log Rotation**: Automatic log file rotation using lumberjack
-- **Request Tracing**: Support for request ID tracking with custom key configuration
+- **Request Tracing**: Support for request ID tracking with custom key configuration (commonly used for HTTP request tracing)
 - **Method Chaining**: Fluent API for clean, readable code
 - **Context Support**: Automatic request ID inclusion from Go context
 - **Thread Safe**: Built on zap's thread-safe foundation
@@ -194,6 +194,85 @@ func processUser(ctx context.Context, log gologger.Logger) {
         Data("user_id", 123).
         Data("duration", "150ms").
         Send()
+}
+```
+
+### Echo Framework Example
+
+Request ID is commonly used for tracing HTTP requests. Here's a simple example with Echo framework:
+
+```go
+package main
+
+import (
+    "fmt"
+    "net/http"
+    "time"
+    
+    "github.com/labstack/echo/v4"
+    "github.com/risoftinc/gologger"
+)
+
+func main() {
+    log := gologger.NewLogger()
+    defer log.Close()
+    
+    e := echo.New()
+    
+    // Request ID middleware
+    e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
+        return func(c echo.Context) error {
+            requestID := fmt.Sprintf("req-%d", time.Now().UnixNano())
+            c.Set("request_id", requestID)
+            
+            ctx := gologger.WithRequestID(c.Request().Context(), requestID)
+            c.SetRequest(c.Request().WithContext(ctx))
+            
+            c.Response().Header().Set("X-Request-ID", requestID)
+            return next(c)
+        }
+    })
+    
+    // Logging middleware
+    e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
+        return func(c echo.Context) error {
+            start := time.Now()
+            ctx := c.Request().Context()
+            
+            log.WithContext(ctx).
+                Info("Request started").
+                Data("method", c.Request().Method).
+                Data("path", c.Request().URL.Path).
+                Send()
+            
+            err := next(c)
+            
+            log.WithContext(ctx).
+                Info("Request completed").
+                Data("status", c.Response().Status).
+                Data("duration", time.Since(start).String()).
+                Send()
+            
+            return err
+        }
+    })
+    
+    e.GET("/api/users", func(c echo.Context) error {
+        ctx := c.Request().Context()
+        log.WithContext(ctx).Info("Getting users").Send()
+        
+        users := []map[string]interface{}{
+            {"id": 1, "name": "John Doe"},
+            {"id": 2, "name": "Jane Smith"},
+        }
+        
+        return c.JSON(http.StatusOK, map[string]interface{}{
+            "users": users,
+            "request_id": c.Get("request_id"),
+        })
+    })
+    
+    e.Logger.Fatal(e.Start(":8080"))
 }
 ```
 
