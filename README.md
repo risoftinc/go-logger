@@ -33,7 +33,7 @@ A structured logging solution for Go applications using zap gologger. This packa
 - **Structured Logging**: JSON format with timestamps and caller information
 - **Log Rotation**: Automatic log file rotation using lumberjack
 - **Request Tracing**: Support for request ID tracking with custom key configuration
-- **Method Chaining**: Fluent API similar to GORM for clean, readable code
+- **Method Chaining**: Fluent API for clean, readable code
 - **Context Support**: Automatic request ID inclusion from Go context
 - **Thread Safe**: Built on zap's thread-safe foundation
 
@@ -276,7 +276,7 @@ log.WithContext(ctx).
 
 ### Key Benefits
 
-1. **Fluent API**: Clean method chaining like GORM
+1. **Fluent API**: Clean method chaining
 2. **Automatic Request ID**: If present in context, request ID is automatically included
 3. **Custom Request ID Key**: Configure custom keys for different services (trace_id, correlation_id, etc.)
 4. **Flexible Data**: Add as many data fields as needed
