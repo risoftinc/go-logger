@@ -1,0 +1,469 @@
+# Logger Package
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Go Version](https://img.shields.io/badge/Go-1.21+-blue.svg)](https://golang.org/)
+[![Go Report Card](https://goreportcard.com/badge/github.com/risoftinc/logger)](https://goreportcard.com/report/github.com/risoftinc/logger)
+
+A structured logging solution for Go applications using zap logger. This package provides a simplified interface for logging with support for multiple output modes and log levels.
+
+## Table of Contents
+
+- [Features](#features)
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+  - [Basic Usage](#basic-usage)
+  - [Custom Configuration](#custom-configuration)
+  - [Logging with Data](#logging-with-data)
+  - [Custom Request ID Key](#custom-request-id-key)
+- [Context Support](#context-support)
+- [Method Chaining Behavior](#method-chaining-behavior)
+- [Configuration Options](#configuration-options)
+- [API Reference](#api-reference)
+- [Log File Configuration](#log-file-configuration)
+- [Performance & Thread Safety](#performance--thread-safety)
+- [Troubleshooting](#troubleshooting)
+- [Dependencies](#dependencies)
+- [Contributing](#contributing)
+- [License](#license)
+
+## Features
+
+- **Multiple Output Modes**: Terminal, file, or both
+- **Configurable Log Levels**: Debug, Info, Warn, Error
+- **Structured Logging**: JSON format with timestamps and caller information
+- **Log Rotation**: Automatic log file rotation using lumberjack
+- **Request Tracing**: Support for request ID tracking with custom key configuration
+- **Method Chaining**: Fluent API similar to GORM for clean, readable code
+- **Context Support**: Automatic request ID inclusion from Go context
+- **Thread Safe**: Built on zap's thread-safe foundation
+
+## Installation
+
+```bash
+go get github.com/risoftinc/logger
+```
+
+## Quick Start
+
+### Basic Usage
+
+```go
+package main
+
+import (
+    "github.com/risoftinc/logger"
+)
+
+func main() {
+    // Create logger with default configuration
+    log := logger.NewLogger()
+    defer log.Close()
+
+    // Simple logging with method chaining
+    log.Info("Application started").Send()
+    log.Warn("This is a warning").Send()
+    log.Error("An error occurred").Send()
+}
+```
+
+### Custom Configuration
+
+```go
+package main
+
+import (
+    "github.com/risoftinc/logger"
+)
+
+func main() {
+    // Create logger with custom configuration
+    config := logger.LoggerConfig{
+        OutputMode: logger.OutputFile,
+        LogLevel:   logger.LevelInfo,
+        LogDir:     "logs",
+    }
+    
+    log := logger.NewLoggerWithConfig(config)
+    defer log.Close()
+
+    log.Info("Application started with custom config").Send()
+}
+```
+
+### Logging with Data
+
+```go
+// Log with additional data using method chaining
+log.Info("User login").
+    Data("user_id", 123).
+    Data("ip", "192.168.1.1").
+    Send()
+
+// Context-based logging (RECOMMENDED)
+ctx := logger.WithRequestID(context.Background(), "req-123")
+log.WithContext(ctx).
+    Info("API request").
+    Data("endpoint", "/api/users").
+    Data("method", "GET").
+    Send()
+```
+
+### Custom Request ID Key
+
+```go
+// Create logger with custom request ID key
+config := logger.LoggerConfig{
+    OutputMode:   logger.OutputTerminal,
+    LogLevel:     logger.LevelInfo,
+    RequestIDKey: "trace_id", // Custom key instead of "request-id"
+}
+
+log := logger.NewLoggerWithConfig(config)
+defer log.Close()
+
+// Add request ID to context
+ctx := logger.WithRequestID(context.Background(), "trace-456")
+
+// Log with custom key
+log.WithContext(ctx).
+    Info("Processing request").
+    Data("user_id", 123).
+    Send()
+// Output: {"level":"info","msg":"Processing request","trace_id":"trace-456","user_id":123}
+```
+
+## Context Support
+
+The logger supports Go's context package for request tracing with automatic request ID inclusion:
+
+```go
+// Add request ID to context
+ctx := logger.WithRequestID(context.Background(), "req-123")
+
+// Get request ID from context
+requestID := logger.GetRequestID(ctx)
+
+// Log with context (automatically includes request ID if present)
+log.WithContext(ctx).
+    Info("Processing request").
+    Data("step", "validation").
+    Send()
+
+// Even without additional data, request ID will still be included
+log.WithContext(ctx).Info("Simple message").Send()
+```
+
+### HTTP Request Flow Example
+
+```go
+func handleRequest(w http.ResponseWriter, r *http.Request) {
+    // Add request ID to context
+    ctx := logger.WithRequestID(r.Context(), generateRequestID())
+    
+    // All subsequent logs will include the request ID
+    log.WithContext(ctx).
+        Info("Request started").
+        Data("method", r.Method).
+        Data("path", r.URL.Path).
+        Send()
+    
+    // Process request...
+    processUser(ctx, log)
+    
+    log.WithContext(ctx).
+        Info("Request completed").
+        Data("status", 200).
+        Send()
+}
+
+func processUser(ctx context.Context, log logger.Logger) {
+    // Error handling example
+    err := validateUser()
+    if err != nil {
+        log.WithContext(ctx).
+            Error("User validation failed").
+            ErrorData(err).
+            Data("step", "validation").
+            Send()
+        return
+    }
+    
+    // Success logging
+    log.WithContext(ctx).
+        Info("User processed successfully").
+        Data("user_id", 123).
+        Data("duration", "150ms").
+        Send()
+}
+```
+
+## Method Chaining Behavior
+
+The new method chaining API provides a clean, fluent interface:
+
+### With Request ID in Context
+
+```go
+ctx := logger.WithRequestID(context.Background(), "req-123")
+
+// No additional data - still includes request ID
+log.WithContext(ctx).Info("Simple message").Send()
+// Output: {"level":"info","msg":"Simple message","request-id":"req-123"}
+
+// With additional data - includes both request ID and data
+log.WithContext(ctx).
+    Info("Processing").
+    Data("step", "validation").
+    Data("user_id", 123).
+    Send()
+// Output: {"level":"info","msg":"Processing","request-id":"req-123","step":"validation","user_id":123}
+```
+
+### Without Request ID in Context
+
+```go
+ctx := context.Background()
+
+// No additional data - simple message
+log.WithContext(ctx).Info("Simple message").Send()
+// Output: {"level":"info","msg":"Simple message"}
+
+// With additional data - includes data only
+log.WithContext(ctx).
+    Info("Processing").
+    Data("step", "validation").
+    Send()
+// Output: {"level":"info","msg":"Processing","step":"validation"}
+```
+
+### With Custom Request ID Key
+
+```go
+// Create logger with custom request ID key
+config := logger.LoggerConfig{
+    OutputMode:   logger.OutputTerminal,
+    LogLevel:     logger.LevelInfo,
+    RequestIDKey: "trace_id",
+}
+log := logger.NewLoggerWithConfig(config)
+
+ctx := logger.WithRequestID(context.Background(), "trace-456")
+
+// Uses custom key "trace_id" instead of "request-id"
+log.WithContext(ctx).Info("Processing with trace ID").Send()
+// Output: {"level":"info","msg":"Processing with trace ID","trace_id":"trace-456"}
+
+// With additional data
+log.WithContext(ctx).
+    Info("Processing").
+    Data("step", "validation").
+    Data("user_id", 123).
+    Send()
+// Output: {"level":"info","msg":"Processing","trace_id":"trace-456","step":"validation","user_id":123}
+```
+
+### Error Handling
+
+```go
+err := errors.New("database connection failed")
+log.WithContext(ctx).
+    Error("Operation failed").
+    ErrorData(err).
+    Data("retry_count", 3).
+    Send()
+// Output: {"level":"error","msg":"Operation failed","request-id":"req-123","error":"database connection failed","retry_count":3}
+```
+
+### Key Benefits
+
+1. **Fluent API**: Clean method chaining like GORM
+2. **Automatic Request ID**: If present in context, request ID is automatically included
+3. **Custom Request ID Key**: Configure custom keys for different services (trace_id, correlation_id, etc.)
+4. **Flexible Data**: Add as many data fields as needed
+5. **Error Handling**: Dedicated `ErrorData()` method for errors
+6. **Type Safe**: Compile-time checking for method chaining
+
+## API Reference
+
+### Constructor Functions
+
+- `NewLogger()`: Creates logger with default configuration
+- `NewLoggerWithConfig(config LoggerConfig)`: Creates logger with custom configuration
+
+### LoggerConfig Fields
+
+- `OutputMode string`: Output mode (`OutputTerminal`, `OutputFile`, `OutputBoth`)
+- `LogLevel string`: Log level (`LevelDebug`, `LevelInfo`, `LevelWarn`, `LevelError`)
+- `LogDir string`: Directory for log files
+- `RequestIDKey string`: Custom key for request ID in logs (default: `"request-id"`)
+
+### Context Functions
+
+- `WithRequestID(ctx context.Context, requestID string) context.Context`: Adds request ID to context
+- `GetRequestID(ctx context.Context) string`: Retrieves request ID from context
+
+### Method Chaining API
+
+#### Log Level Methods
+- `Debug(msg string) Logger` - Sets debug level and message
+- `Info(msg string) Logger` - Sets info level and message
+- `Warn(msg string) Logger` - Sets warn level and message
+- `Error(msg string) Logger` - Sets error level and message
+- `Fatal(msg string) Logger` - Sets fatal level and message
+- `Panic(msg string) Logger` - Sets panic level and message
+
+#### Data Methods
+- `Data(key string, value any) Logger` - Adds key-value pair to log data
+- `ErrorData(err error) Logger` - Adds error information to log data
+
+#### Context Methods
+- `WithContext(ctx context.Context) Logger` - Creates logger with context
+
+#### Execution Method
+- `Send()` - Executes the log operation
+
+### Utility Methods
+
+- `Close()`: Syncs and closes the logger
+
+## Configuration Options
+
+### LoggerConfig Structure
+
+```go
+type LoggerConfig struct {
+    OutputMode    string // Output mode: OutputTerminal, OutputFile, or OutputBoth
+    LogLevel      string // Log level: LevelDebug, LevelInfo, LevelWarn, or LevelError
+    LogDir        string // Directory for log files
+    RequestIDKey  string // Custom key for request ID in logs (default: "request-id")
+}
+```
+
+### Custom Request ID Key
+
+You can customize the key used for request ID in logs:
+
+```go
+// Default request ID key
+log := logger.NewLogger()
+// Output: {"level":"info","msg":"Message","request-id":"req-123"}
+
+// Custom request ID key
+config := logger.LoggerConfig{
+    OutputMode:   logger.OutputTerminal,
+    LogLevel:     logger.LevelInfo,
+    RequestIDKey: "trace_id",
+}
+log := logger.NewLoggerWithConfig(config)
+// Output: {"level":"info","msg":"Message","trace_id":"req-123"}
+
+// Different keys for different services
+apiConfig := logger.LoggerConfig{
+    RequestIDKey: "request_id",
+}
+apiLogger := logger.NewLoggerWithConfig(apiConfig)
+
+bgConfig := logger.LoggerConfig{
+    RequestIDKey: "job_id",
+}
+bgLogger := logger.NewLoggerWithConfig(bgConfig)
+```
+
+### Common Request ID Key Patterns
+
+- `"request-id"` - Default, good for HTTP APIs
+- `"trace_id"` - For distributed tracing
+- `"correlation_id"` - For business correlation
+- `"session_id"` - For user sessions
+- `"job_id"` - For background jobs
+- `"transaction_id"` - For database transactions
+
+## Log File Configuration
+
+Log files are automatically rotated with the following settings:
+- Maximum file size: 10 MB
+- Maximum backup files: 3
+- Maximum age: 28 days
+- Compression: Enabled
+
+Log files are named with the pattern: `logger-YYYY-MM-DD.log`
+
+## Performance & Thread Safety
+
+### Performance
+- **Zero-allocation logging**: Built on zap's high-performance foundation
+- **Structured logging**: JSON output for easy parsing and analysis
+- **Method chaining**: Minimal overhead, returns new instances for immutability
+
+### Thread Safety
+- **Concurrent safe**: All logger methods are thread-safe
+- **Immutable design**: Method chaining returns new instances
+- **Context propagation**: Safe to pass logger instances across goroutines
+
+### Memory Usage
+- **Efficient**: Uses zap's object pool for reduced GC pressure
+- **Configurable**: Adjust log levels to control verbosity
+- **Rotation**: Automatic log file rotation prevents disk space issues
+
+## Troubleshooting
+
+### Common Issues
+
+#### 1. Log Files Not Created
+```go
+// Ensure log directory exists and has write permissions
+config := logger.LoggerConfig{
+    OutputMode: logger.OutputFile,
+    LogDir:     "logs", // Make sure this directory exists
+}
+```
+
+#### 2. Request ID Not Appearing
+```go
+// Make sure to use WithContext() method
+ctx := logger.WithRequestID(context.Background(), "req-123")
+log.WithContext(ctx).Info("Message").Send() // ✅ Correct
+
+// Don't forget to call Send()
+log.WithContext(ctx).Info("Message") // ❌ Won't log
+```
+
+#### 3. Custom Request ID Key Not Working
+```go
+// Ensure RequestIDKey is set in config
+config := logger.LoggerConfig{
+    RequestIDKey: "trace_id", // Must be set
+}
+log := logger.NewLoggerWithConfig(config)
+```
+
+#### 4. Method Chaining Not Working
+```go
+// Each method returns a new Logger instance
+logger := log.Info("Message").Data("key", "value") // Returns new instance
+logger.Send() // Must call Send() on the returned instance
+```
+
+### Debug Mode
+```go
+// Enable debug logging to see internal operations
+config := logger.LoggerConfig{
+    LogLevel: logger.LevelDebug,
+}
+log := logger.NewLoggerWithConfig(config)
+```
+
+## Dependencies
+
+- [go.uber.org/zap](https://github.com/uber-go/zap): High-performance structured logging
+- [gopkg.in/natefinch/lumberjack.v2](https://github.com/natefinch/lumberjack): Log rotation
+
+## Contributing
+
+Contributions are welcome! Please read our [Contributing Guidelines](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+Copyright (c) 2025 Risoftinc.
