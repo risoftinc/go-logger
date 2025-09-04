@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/risoftinc/logger"
+	"github.com/risoftinc/go-logger"
 )
 
 func main() {

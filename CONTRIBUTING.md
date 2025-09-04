@@ -10,7 +10,7 @@ This project follows the [Contributor Covenant Code of Conduct](https://www.cont
 
 ### Reporting Issues
 
-1. Check if the issue already exists in the [Issues](https://github.com/risoftinc/logger/issues) section
+1. Check if the issue already exists in the [Issues](https://github.com/risoftinc/go-logger/issues) section
 2. If not, create a new issue with:
    - Clear description of the problem
    - Steps to reproduce
@@ -112,7 +112,7 @@ logger/
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/risoftinc/logger.git
+   git clone https://github.com/risoftinc/go-logger.git
    cd logger
    ```
 
