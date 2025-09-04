@@ -6,13 +6,13 @@ import (
 	"net/http"
 	"time"
 
-	logger "github.com/risoftinc/gologger"
+	"github.com/risoftinc/gologger"
 )
 
 // HTTPExample demonstrates how to use the logger with HTTP requests
 func HTTPExample() {
 	// Create logger
-	log := logger.NewLogger()
+	log := gologger.NewLogger()
 	defer log.Close()
 
 	// Setup HTTP handler
@@ -32,12 +32,12 @@ func HTTPExample() {
 	// log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
-func handleUserRequest(w http.ResponseWriter, r *http.Request, log logger.Logger) {
+func handleUserRequest(w http.ResponseWriter, r *http.Request, log gologger.Logger) {
 	// Generate request ID
 	requestID := generateRequestID()
 
 	// Add request ID to context
-	ctx := logger.WithRequestID(r.Context(), requestID)
+	ctx := gologger.WithRequestID(r.Context(), requestID)
 
 	// Log request start
 	log.WithContext(ctx).
@@ -72,8 +72,8 @@ func handleUserRequest(w http.ResponseWriter, r *http.Request, log logger.Logger
 	fmt.Fprintf(w, `{"id": %d, "name": "%s", "request_id": "%s"}`, user.ID, user.Name, requestID)
 }
 
-func handleHealthCheck(w http.ResponseWriter, r *http.Request, log logger.Logger) {
-	ctx := logger.WithRequestID(r.Context(), "health-"+generateRequestID())
+func handleHealthCheck(w http.ResponseWriter, r *http.Request, log gologger.Logger) {
+	ctx := gologger.WithRequestID(r.Context(), "health-"+generateRequestID())
 
 	log.WithContext(ctx).Info("Health check requested").Send()
 
@@ -97,7 +97,7 @@ func handleHealthCheck(w http.ResponseWriter, r *http.Request, log logger.Logger
 	}
 }
 
-func processUserRequest(ctx context.Context, log logger.Logger, r *http.Request) (*User, error) {
+func processUserRequest(ctx context.Context, log gologger.Logger, r *http.Request) (*User, error) {
 	log.WithContext(ctx).
 		Info("Processing user request").
 		Data("step", "validation").
@@ -127,7 +127,7 @@ func processUserRequest(ctx context.Context, log logger.Logger, r *http.Request)
 	return user, nil
 }
 
-func validateRequest(ctx context.Context, log logger.Logger, r *http.Request) error {
+func validateRequest(ctx context.Context, log gologger.Logger, r *http.Request) error {
 	log.WithContext(ctx).
 		Debug("Validating request").
 		Data("component", "validator").
@@ -150,7 +150,7 @@ func validateRequest(ctx context.Context, log logger.Logger, r *http.Request) er
 	return nil
 }
 
-func saveUserToDatabase(ctx context.Context, log logger.Logger) (*User, error) {
+func saveUserToDatabase(ctx context.Context, log gologger.Logger) (*User, error) {
 	log.WithContext(ctx).
 		Info("Connecting to database").
 		Data("component", "database").
@@ -189,7 +189,7 @@ func saveUserToDatabase(ctx context.Context, log logger.Logger) (*User, error) {
 	return user, nil
 }
 
-func checkSystemHealth(ctx context.Context, log logger.Logger) *HealthStatus {
+func checkSystemHealth(ctx context.Context, log gologger.Logger) *HealthStatus {
 	log.WithContext(ctx).
 		Debug("Checking system health").
 		Data("component", "health_checker").
@@ -227,7 +227,7 @@ func checkSystemHealth(ctx context.Context, log logger.Logger) *HealthStatus {
 	}
 }
 
-func checkDatabase(ctx context.Context, log logger.Logger) error {
+func checkDatabase(ctx context.Context, log gologger.Logger) error {
 	log.WithContext(ctx).
 		Debug("Checking database connection").
 		Data("service", "database").
@@ -236,7 +236,7 @@ func checkDatabase(ctx context.Context, log logger.Logger) error {
 	return nil
 }
 
-func checkExternalServices(ctx context.Context, log logger.Logger) error {
+func checkExternalServices(ctx context.Context, log gologger.Logger) error {
 	log.WithContext(ctx).
 		Debug("Checking external services").
 		Data("service", "payment_gateway").

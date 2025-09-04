@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.0] - 2025-09-04
 
 ### Added
-- Initial release of logger package
+- Initial release of gologger package
 - Method chaining API similar
 - Context-aware logging with automatic request ID inclusion
 - Custom request ID key configuration for different services
@@ -35,33 +35,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Context Support**: Automatic request ID inclusion
   ```go
-  ctx := logger.WithRequestID(context.Background(), "req-123")
+  ctx := gologger.WithRequestID(context.Background(), "req-123")
   log.WithContext(ctx).Info("Request started").Send()
   ```
 
 - **Custom Request ID Key**: Configure different keys for different services
   ```go
   // API Service
-  apiConfig := logger.LoggerConfig{
+  apiConfig := gologger.LoggerConfig{
       RequestIDKey: "request_id",
   }
-  apiLogger := logger.NewLoggerWithConfig(apiConfig)
+  apiLogger := gologger.NewLoggerWithConfig(apiConfig)
   
   // Background Service
-  bgConfig := logger.LoggerConfig{
+  bgConfig := gologger.LoggerConfig{
       RequestIDKey: "job_id",
   }
-  bgLogger := logger.NewLoggerWithConfig(bgConfig)
+  bgLogger := gologger.NewLoggerWithConfig(bgConfig)
   ```
 
 - **Flexible Configuration**: Multiple output modes and log levels
   ```go
-  config := logger.LoggerConfig{
-      OutputMode: logger.OutputBoth,
-      LogLevel:   logger.LevelInfo,
+  config := gologger.LoggerConfig{
+      OutputMode: gologger.OutputBoth,
+      LogLevel:   gologger.LevelInfo,
       LogDir:     "logs",
   }
-  log := logger.NewLoggerWithConfig(config)
+  log := gologger.NewLoggerWithConfig(config)
   ```
 
 - **Error Handling**: Dedicated error logging
@@ -88,18 +88,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### API Reference
 - `NewLogger()` - Create logger with default config
-- `NewLoggerWithConfig(config LoggerConfig)` - Create logger with custom config
-- `WithContext(ctx context.Context) Logger` - Create logger with context
+- `NewLoggerWithConfig(config gologger.LoggerConfig)` - Create logger with custom config
+- `WithContext(ctx context.Context) gologger.Logger` - Create logger with context
 - `WithRequestID(ctx context.Context, requestID string) context.Context` - Add request ID to context
 - `GetRequestID(ctx context.Context) string` - Get request ID from context
-- `Debug(msg string) Logger` - Set debug level
-- `Info(msg string) Logger` - Set info level
-- `Warn(msg string) Logger` - Set warn level
-- `Error(msg string) Logger` - Set error level
-- `Fatal(msg string) Logger` - Set fatal level
-- `Panic(msg string) Logger` - Set panic level
-- `Data(key string, value any) Logger` - Add key-value data
-- `ErrorData(err error) Logger` - Add error information
+- `Debug(msg string) gologger.Logger` - Set debug level
+- `Info(msg string) gologger.Logger` - Set info level
+- `Warn(msg string) gologger.Logger` - Set warn level
+- `Error(msg string) gologger.Logger` - Set error level
+- `Fatal(msg string) gologger.Logger` - Set fatal level
+- `Panic(msg string) gologger.Logger` - Set panic level
+- `Data(key string, value any) gologger.Logger` - Add key-value data
+- `ErrorData(err error) gologger.Logger` - Add error information
 - `Send()` - Execute the log operation
 - `Close()` - Close and sync logger
 

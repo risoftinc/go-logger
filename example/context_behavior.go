@@ -3,16 +3,16 @@ package main
 import (
 	"context"
 
-	logger "github.com/risoftinc/gologger"
+	"github.com/risoftinc/gologger"
 )
 
 // ContextBehaviorExample demonstrates different scenarios when using context-aware logging
 func ContextBehaviorExample() {
-	log := logger.NewLogger()
+	log := gologger.NewLogger()
 	defer log.Close()
 
 	// Scenario 1: Context with request ID, no additional data
-	ctx := logger.WithRequestID(context.Background(), "req-001")
+	ctx := gologger.WithRequestID(context.Background(), "req-001")
 
 	log.WithContext(ctx).Info("Simple message with request ID only").Send()
 	// Output: {"level":"info","timestamp":"...","msg":"Simple message with request ID only","request-id":"req-001"}
@@ -54,11 +54,11 @@ func ContextBehaviorExample() {
 
 // DemonstrateHTTPFlow shows how it works in a typical HTTP request flow
 func DemonstrateHTTPFlow() {
-	log := logger.NewLogger()
+	log := gologger.NewLogger()
 	defer log.Close()
 
 	// Simulate HTTP request processing
-	ctx := logger.WithRequestID(context.Background(), "req-http-123")
+	ctx := gologger.WithRequestID(context.Background(), "req-http-123")
 
 	// Step 1: Request received (no additional data)
 	log.WithContext(ctx).Info("HTTP request received").Send()
@@ -94,11 +94,11 @@ func DemonstrateHTTPFlow() {
 
 // ShowComparison demonstrates the difference between old and new approaches
 func ShowComparison() {
-	log := logger.NewLogger()
+	log := gologger.NewLogger()
 	defer log.Close()
 
 	requestID := "req-comparison-456"
-	ctx := logger.WithRequestID(context.Background(), requestID)
+	ctx := gologger.WithRequestID(context.Background(), requestID)
 
 	// OLD WAY: Manual request ID passing (method chaining approach)
 	log.WithContext(ctx).

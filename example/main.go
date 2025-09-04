@@ -4,12 +4,12 @@ import (
 	"context"
 	"errors"
 
-	logger "github.com/risoftinc/gologger"
+	"github.com/risoftinc/gologger"
 )
 
 func main() {
 	// Example 1: Basic logging with method chaining
-	log := logger.NewLogger()
+	log := gologger.NewLogger()
 	defer log.Close()
 
 	// Simple logging
@@ -27,7 +27,7 @@ func main() {
 
 	// Example 3: Context-based logging (RECOMMENDED WAY)
 	ctx := context.Background()
-	ctx = logger.WithRequestID(ctx, "req-67890")
+	ctx = gologger.WithRequestID(ctx, "req-67890")
 
 	// Log with context - request ID will be automatically included
 	log.WithContext(ctx).
@@ -65,10 +65,10 @@ func main() {
 	simulateHTTPRequest(log)
 }
 
-func simulateHTTPRequest(log logger.Logger) {
+func simulateHTTPRequest(log gologger.Logger) {
 	// Simulate incoming HTTP request
 	ctx := context.Background()
-	ctx = logger.WithRequestID(ctx, "req-http-001")
+	ctx = gologger.WithRequestID(ctx, "req-http-001")
 
 	log.WithContext(ctx).
 		Info("HTTP request received").
@@ -85,7 +85,7 @@ func simulateHTTPRequest(log logger.Logger) {
 		Send()
 }
 
-func processUser(ctx context.Context, log logger.Logger) {
+func processUser(ctx context.Context, log gologger.Logger) {
 	log.WithContext(ctx).
 		Info("Processing user data").
 		Data("step", "validation").

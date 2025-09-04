@@ -1,6 +1,6 @@
-# Contributing to Logger Package
+# Contributing to gologger Package
 
-Thank you for your interest in contributing to the Risoftinc. Logger package! This document provides guidelines for contributing to this project.
+Thank you for your interest in contributing to the Risoftinc. gologger package! This document provides guidelines for contributing to this project.
 
 ## Code of Conduct
 
@@ -81,7 +81,7 @@ Types:
 
 Examples:
 ```
-feat(logger): add custom request ID key configuration
+feat(gologger): add custom request ID key configuration
 fix(context): handle nil context gracefully
 docs(readme): update installation instructions
 ```
@@ -89,7 +89,7 @@ docs(readme): update installation instructions
 ## Project Structure
 
 ```
-logger/
+gologger/
 ├── logger.go              # Main package implementation
 ├── logger_test.go         # Unit tests
 ├── go.mod                 # Go module definition
@@ -113,7 +113,7 @@ logger/
 1. Clone the repository:
    ```bash
    git clone https://github.com/risoftinc/gologger.git
-   cd logger
+   cd gologger
    ```
 
 2. Install dependencies:
@@ -151,4 +151,4 @@ If you have questions about contributing, please:
 - Contact the maintainers
 - Check existing discussions
 
-Thank you for contributing to the Logger package! 🚀
+Thank you for contributing to the gologger package! 🚀

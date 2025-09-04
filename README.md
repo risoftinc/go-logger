@@ -1,10 +1,10 @@
-# Logger Package
+# gologger Package
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Go Version](https://img.shields.io/badge/Go-1.21+-blue.svg)](https://golang.org/)
 [![Go Report Card](https://goreportcard.com/badge/github.com/risoftinc/gologger)](https://goreportcard.com/report/github.com/risoftinc/gologger)
 
-A structured logging solution for Go applications using zap logger. This package provides a simplified interface for logging with support for multiple output modes and log levels.
+A structured logging solution for Go applications using zap gologger. This package provides a simplified interface for logging with support for multiple output modes and log levels.
 
 ## Table of Contents
 
@@ -56,7 +56,7 @@ import (
 
 func main() {
     // Create logger with default configuration
-    log := logger.NewLogger()
+    log := gologger.NewLogger()
     defer log.Close()
 
     // Simple logging with method chaining
@@ -77,13 +77,13 @@ import (
 
 func main() {
     // Create logger with custom configuration
-    config := logger.LoggerConfig{
-        OutputMode: logger.OutputFile,
-        LogLevel:   logger.LevelInfo,
+    config := gologger.LoggerConfig{
+        OutputMode: gologger.OutputFile,
+        LogLevel:   gologger.LevelInfo,
         LogDir:     "logs",
     }
     
-    log := logger.NewLoggerWithConfig(config)
+    log := gologger.NewLoggerWithConfig(config)
     defer log.Close()
 
     log.Info("Application started with custom config").Send()
@@ -100,7 +100,7 @@ log.Info("User login").
     Send()
 
 // Context-based logging (RECOMMENDED)
-ctx := logger.WithRequestID(context.Background(), "req-123")
+ctx := gologger.WithRequestID(context.Background(), "req-123")
 log.WithContext(ctx).
     Info("API request").
     Data("endpoint", "/api/users").
@@ -112,17 +112,17 @@ log.WithContext(ctx).
 
 ```go
 // Create logger with custom request ID key
-config := logger.LoggerConfig{
-    OutputMode:   logger.OutputTerminal,
-    LogLevel:     logger.LevelInfo,
+config := gologger.LoggerConfig{
+    OutputMode:   gologger.OutputTerminal,
+    LogLevel:     gologger.LevelInfo,
     RequestIDKey: "trace_id", // Custom key instead of "request-id"
 }
 
-log := logger.NewLoggerWithConfig(config)
+log := gologger.NewLoggerWithConfig(config)
 defer log.Close()
 
 // Add request ID to context
-ctx := logger.WithRequestID(context.Background(), "trace-456")
+ctx := gologger.WithRequestID(context.Background(), "trace-456")
 
 // Log with custom key
 log.WithContext(ctx).
@@ -138,10 +138,10 @@ The logger supports Go's context package for request tracing with automatic requ
 
 ```go
 // Add request ID to context
-ctx := logger.WithRequestID(context.Background(), "req-123")
+ctx := gologger.WithRequestID(context.Background(), "req-123")
 
 // Get request ID from context
-requestID := logger.GetRequestID(ctx)
+requestID := gologger.GetRequestID(ctx)
 
 // Log with context (automatically includes request ID if present)
 log.WithContext(ctx).
@@ -158,7 +158,7 @@ log.WithContext(ctx).Info("Simple message").Send()
 ```go
 func handleRequest(w http.ResponseWriter, r *http.Request) {
     // Add request ID to context
-    ctx := logger.WithRequestID(r.Context(), generateRequestID())
+    ctx := gologger.WithRequestID(r.Context(), generateRequestID())
     
     // All subsequent logs will include the request ID
     log.WithContext(ctx).
@@ -176,7 +176,7 @@ func handleRequest(w http.ResponseWriter, r *http.Request) {
         Send()
 }
 
-func processUser(ctx context.Context, log logger.Logger) {
+func processUser(ctx context.Context, log gologger.Logger) {
     // Error handling example
     err := validateUser()
     if err != nil {
@@ -204,7 +204,7 @@ The new method chaining API provides a clean, fluent interface:
 ### With Request ID in Context
 
 ```go
-ctx := logger.WithRequestID(context.Background(), "req-123")
+ctx := gologger.WithRequestID(context.Background(), "req-123")
 
 // No additional data - still includes request ID
 log.WithContext(ctx).Info("Simple message").Send()
@@ -240,14 +240,14 @@ log.WithContext(ctx).
 
 ```go
 // Create logger with custom request ID key
-config := logger.LoggerConfig{
-    OutputMode:   logger.OutputTerminal,
-    LogLevel:     logger.LevelInfo,
+config := gologger.LoggerConfig{
+    OutputMode:   gologger.OutputTerminal,
+    LogLevel:     gologger.LevelInfo,
     RequestIDKey: "trace_id",
 }
-log := logger.NewLoggerWithConfig(config)
+log := gologger.NewLoggerWithConfig(config)
 
-ctx := logger.WithRequestID(context.Background(), "trace-456")
+ctx := gologger.WithRequestID(context.Background(), "trace-456")
 
 // Uses custom key "trace_id" instead of "request-id"
 log.WithContext(ctx).Info("Processing with trace ID").Send()
@@ -288,9 +288,9 @@ log.WithContext(ctx).
 ### Constructor Functions
 
 - `NewLogger()`: Creates logger with default configuration
-- `NewLoggerWithConfig(config LoggerConfig)`: Creates logger with custom configuration
+- `NewLoggerWithConfig(config gologger.LoggerConfig)`: Creates logger with custom configuration
 
-### LoggerConfig Fields
+### gologger.LoggerConfig Fields
 
 - `OutputMode string`: Output mode (`OutputTerminal`, `OutputFile`, `OutputBoth`)
 - `LogLevel string`: Log level (`LevelDebug`, `LevelInfo`, `LevelWarn`, `LevelError`)
@@ -305,19 +305,19 @@ log.WithContext(ctx).
 ### Method Chaining API
 
 #### Log Level Methods
-- `Debug(msg string) Logger` - Sets debug level and message
-- `Info(msg string) Logger` - Sets info level and message
-- `Warn(msg string) Logger` - Sets warn level and message
-- `Error(msg string) Logger` - Sets error level and message
-- `Fatal(msg string) Logger` - Sets fatal level and message
-- `Panic(msg string) Logger` - Sets panic level and message
+- `Debug(msg string) gologger.Logger` - Sets debug level and message
+- `Info(msg string) gologger.Logger` - Sets info level and message
+- `Warn(msg string) gologger.Logger` - Sets warn level and message
+- `Error(msg string) gologger.Logger` - Sets error level and message
+- `Fatal(msg string) gologger.Logger` - Sets fatal level and message
+- `Panic(msg string) gologger.Logger` - Sets panic level and message
 
 #### Data Methods
-- `Data(key string, value any) Logger` - Adds key-value pair to log data
-- `ErrorData(err error) Logger` - Adds error information to log data
+- `Data(key string, value any) gologger.Logger` - Adds key-value pair to log data
+- `ErrorData(err error) gologger.Logger` - Adds error information to log data
 
 #### Context Methods
-- `WithContext(ctx context.Context) Logger` - Creates logger with context
+- `WithContext(ctx context.Context) gologger.Logger` - Creates logger with context
 
 #### Execution Method
 - `Send()` - Executes the log operation
@@ -328,10 +328,10 @@ log.WithContext(ctx).
 
 ## Configuration Options
 
-### LoggerConfig Structure
+### gologger.LoggerConfig Structure
 
 ```go
-type LoggerConfig struct {
+type gologger.LoggerConfig struct {
     OutputMode    string // Output mode: OutputTerminal, OutputFile, or OutputBoth
     LogLevel      string // Log level: LevelDebug, LevelInfo, LevelWarn, or LevelError
     LogDir        string // Directory for log files
@@ -345,28 +345,28 @@ You can customize the key used for request ID in logs:
 
 ```go
 // Default request ID key
-log := logger.NewLogger()
+log := gologger.NewLogger()
 // Output: {"level":"info","msg":"Message","request-id":"req-123"}
 
 // Custom request ID key
-config := logger.LoggerConfig{
-    OutputMode:   logger.OutputTerminal,
-    LogLevel:     logger.LevelInfo,
+config := gologger.LoggerConfig{
+    OutputMode:   gologger.OutputTerminal,
+    LogLevel:     gologger.LevelInfo,
     RequestIDKey: "trace_id",
 }
-log := logger.NewLoggerWithConfig(config)
+log := gologger.NewLoggerWithConfig(config)
 // Output: {"level":"info","msg":"Message","trace_id":"req-123"}
 
 // Different keys for different services
-apiConfig := logger.LoggerConfig{
+apiConfig := gologger.LoggerConfig{
     RequestIDKey: "request_id",
 }
-apiLogger := logger.NewLoggerWithConfig(apiConfig)
+apiLogger := gologger.NewLoggerWithConfig(apiConfig)
 
-bgConfig := logger.LoggerConfig{
+bgConfig := gologger.LoggerConfig{
     RequestIDKey: "job_id",
 }
-bgLogger := logger.NewLoggerWithConfig(bgConfig)
+bgLogger := gologger.NewLoggerWithConfig(bgConfig)
 ```
 
 ### Common Request ID Key Patterns
@@ -412,8 +412,8 @@ Log files are named with the pattern: `logger-YYYY-MM-DD.log`
 #### 1. Log Files Not Created
 ```go
 // Ensure log directory exists and has write permissions
-config := logger.LoggerConfig{
-    OutputMode: logger.OutputFile,
+config := gologger.LoggerConfig{
+    OutputMode: gologger.OutputFile,
     LogDir:     "logs", // Make sure this directory exists
 }
 ```
@@ -421,7 +421,7 @@ config := logger.LoggerConfig{
 #### 2. Request ID Not Appearing
 ```go
 // Make sure to use WithContext() method
-ctx := logger.WithRequestID(context.Background(), "req-123")
+ctx := gologger.WithRequestID(context.Background(), "req-123")
 log.WithContext(ctx).Info("Message").Send() // ✅ Correct
 
 // Don't forget to call Send()
@@ -431,15 +431,15 @@ log.WithContext(ctx).Info("Message") // ❌ Won't log
 #### 3. Custom Request ID Key Not Working
 ```go
 // Ensure RequestIDKey is set in config
-config := logger.LoggerConfig{
+config := gologger.LoggerConfig{
     RequestIDKey: "trace_id", // Must be set
 }
-log := logger.NewLoggerWithConfig(config)
+log := gologger.NewLoggerWithConfig(config)
 ```
 
 #### 4. Method Chaining Not Working
 ```go
-// Each method returns a new Logger instance
+// Each method returns a new gologger.Logger instance
 logger := log.Info("Message").Data("key", "value") // Returns new instance
 logger.Send() // Must call Send() on the returned instance
 ```
@@ -447,10 +447,10 @@ logger.Send() // Must call Send() on the returned instance
 ### Debug Mode
 ```go
 // Enable debug logging to see internal operations
-config := logger.LoggerConfig{
-    LogLevel: logger.LevelDebug,
+config := gologger.LoggerConfig{
+    LogLevel: gologger.LevelDebug,
 }
-log := logger.NewLoggerWithConfig(config)
+log := gologger.NewLoggerWithConfig(config)
 ```
 
 ## Dependencies
