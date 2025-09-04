@@ -1,6 +1,6 @@
 // MIT License
 // Copyright (c) 2025 Risoftinc.
-module github.com/risoftinc/logger
+module github.com/risoftinc/gologger
 
 go 1.21
 

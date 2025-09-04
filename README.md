@@ -2,7 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Go Version](https://img.shields.io/badge/Go-1.21+-blue.svg)](https://golang.org/)
-[![Go Report Card](https://goreportcard.com/badge/github.com/risoftinc/logger)](https://goreportcard.com/report/github.com/risoftinc/logger)
+[![Go Report Card](https://goreportcard.com/badge/github.com/risoftinc/gologger)](https://goreportcard.com/report/github.com/risoftinc/gologger)
 
 A structured logging solution for Go applications using zap logger. This package provides a simplified interface for logging with support for multiple output modes and log levels.
 
@@ -40,7 +40,7 @@ A structured logging solution for Go applications using zap logger. This package
 ## Installation
 
 ```bash
-go get github.com/risoftinc/logger
+go get github.com/risoftinc/gologger
 ```
 
 ## Quick Start
@@ -51,7 +51,7 @@ go get github.com/risoftinc/logger
 package main
 
 import (
-    "github.com/risoftinc/logger"
+    "github.com/risoftinc/gologger"
 )
 
 func main() {
@@ -72,7 +72,7 @@ func main() {
 package main
 
 import (
-    "github.com/risoftinc/logger"
+    "github.com/risoftinc/gologger"
 )
 
 func main() {

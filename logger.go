@@ -1,6 +1,6 @@
 // Package logger provides a structured logging solution using zap logger.
 // It supports multiple output modes (terminal, file, both) and various log levels.
-package logger
+package gologger
 
 import (
 	"context"

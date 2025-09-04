@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 
-	"github.com/risoftinc/logger"
+	logger "github.com/risoftinc/gologger"
 )
 
 // ContextBehaviorExample demonstrates different scenarios when using context-aware logging

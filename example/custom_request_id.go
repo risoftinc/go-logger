@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/risoftinc/logger"
+	logger "github.com/risoftinc/gologger"
 )
 
 func customRequestIDExample() {
