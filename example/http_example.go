@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/risoftinc/go-logger"
+	"github.com/risoftinc/logger"
 )
 
 // HTTPExample demonstrates how to use the logger with HTTP requests
