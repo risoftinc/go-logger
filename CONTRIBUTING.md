@@ -1,6 +1,6 @@
 # Contributing to Logger Package
 
-Thank you for your interest in contributing to the Risoft Inc. Logger package! This document provides guidelines for contributing to this project.
+Thank you for your interest in contributing to the Risoftinc. Logger package! This document provides guidelines for contributing to this project.
 
 ## Code of Conduct
 
