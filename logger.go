@@ -73,7 +73,7 @@ func NewLoggerWithConfig(config LoggerConfig) Logger {
 	}
 
 	return Logger{
-		log:          InitLogWithConfig(config),
+		log:          initLogWithConfig(config),
 		ctx:          context.Background(),
 		level:        "",
 		message:      "",
@@ -102,17 +102,17 @@ func prefix() string {
 	return "logger-" + time.Now().Format("2006-01-02")
 }
 
-// InitLog creates a logger with default configuration.
-func InitLog() *zap.SugaredLogger {
-	return InitLogWithConfig(LoggerConfig{
+// initLog creates a logger with default configuration.
+func initLog() *zap.SugaredLogger {
+	return initLogWithConfig(LoggerConfig{
 		OutputMode: OutputBoth,
 		LogLevel:   LevelDebug,
 		LogDir:     "logger",
 	})
 }
 
-// InitLogWithConfig creates a logger with custom configuration.
-func InitLogWithConfig(config LoggerConfig) *zap.SugaredLogger {
+// initLogWithConfig creates a logger with custom configuration.
+func initLogWithConfig(config LoggerConfig) *zap.SugaredLogger {
 	var cores []zapcore.Core
 	encoder := getEncoder()
 	level := getLogLevel(config.LogLevel)
