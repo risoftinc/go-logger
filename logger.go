@@ -31,7 +31,7 @@ const (
 type contextKey string
 
 const (
-	RequestIDKey contextKey = "request_id"
+	RequestIDKey contextKey = "gologger-request-id"
 )
 
 // Logger wraps zap.SugaredLogger to provide a simplified logging interface.
