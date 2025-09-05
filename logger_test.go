@@ -15,7 +15,7 @@ func TestNewLogger(t *testing.T) {
 	log := NewLogger()
 	defer log.Close()
 
-	if log.Log == nil {
+	if log.log == nil {
 		t.Error("Expected logger to be initialized")
 	}
 }
@@ -30,7 +30,7 @@ func TestNewLoggerWithConfig(t *testing.T) {
 	log := NewLoggerWithConfig(config)
 	defer log.Close()
 
-	if log.Log == nil {
+	if log.log == nil {
 		t.Error("Expected logger to be initialized")
 	}
 }

@@ -1,4 +1,4 @@
-// Package logger provides a structured logging solution using zap logger.
+// Package logger provides a structured logging solution.
 // It supports multiple output modes (terminal, file, both) and various log levels.
 package gologger
 
@@ -34,9 +34,9 @@ const (
 	RequestIDKey contextKey = "gologger-request-id"
 )
 
-// Logger wraps zap.SugaredLogger to provide a simplified logging interface.
+// Logger provides a simplified structured logging interface.
 type Logger struct {
-	Log          *zap.SugaredLogger
+	log          *zap.SugaredLogger
 	ctx          context.Context
 	level        string
 	message      string
@@ -73,7 +73,7 @@ func NewLoggerWithConfig(config LoggerConfig) Logger {
 	}
 
 	return Logger{
-		Log:          InitLogWithConfig(config),
+		log:          InitLogWithConfig(config),
 		ctx:          context.Background(),
 		level:        "",
 		message:      "",
@@ -102,7 +102,7 @@ func prefix() string {
 	return "logger-" + time.Now().Format("2006-01-02")
 }
 
-// InitLog creates a zap.SugaredLogger with default configuration.
+// InitLog creates a logger with default configuration.
 func InitLog() *zap.SugaredLogger {
 	return InitLogWithConfig(LoggerConfig{
 		OutputMode: OutputBoth,
@@ -111,7 +111,7 @@ func InitLog() *zap.SugaredLogger {
 	})
 }
 
-// InitLogWithConfig creates a zap.SugaredLogger with custom configuration.
+// InitLogWithConfig creates a logger with custom configuration.
 func InitLogWithConfig(config LoggerConfig) *zap.SugaredLogger {
 	var cores []zapcore.Core
 	encoder := getEncoder()
@@ -187,7 +187,7 @@ func getLogWriter(logDir string) zapcore.WriteSyncer {
 // If the context contains a request ID, it will be automatically included in logs.
 func (l Logger) WithContext(ctx context.Context) Logger {
 	return Logger{
-		Log:          l.Log,
+		log:          l.log,
 		ctx:          ctx,
 		level:        "",
 		message:      "",
@@ -273,45 +273,45 @@ func (l Logger) Send() {
 	switch l.level {
 	case "debug":
 		if hasStructuredData {
-			l.Log.Debugw(l.message, logData...)
+			l.log.Debugw(l.message, logData...)
 		} else {
-			l.Log.Debug(l.message)
+			l.log.Debug(l.message)
 		}
 	case "info":
 		if hasStructuredData {
-			l.Log.Infow(l.message, logData...)
+			l.log.Infow(l.message, logData...)
 		} else {
-			l.Log.Info(l.message)
+			l.log.Info(l.message)
 		}
 	case "warn":
 		if hasStructuredData {
-			l.Log.Warnw(l.message, logData...)
+			l.log.Warnw(l.message, logData...)
 		} else {
-			l.Log.Warn(l.message)
+			l.log.Warn(l.message)
 		}
 	case "error":
 		if hasStructuredData {
-			l.Log.Errorw(l.message, logData...)
+			l.log.Errorw(l.message, logData...)
 		} else {
-			l.Log.Error(l.message)
+			l.log.Error(l.message)
 		}
 	case "fatal":
 		if hasStructuredData {
-			l.Log.Fatalw(l.message, logData...)
+			l.log.Fatalw(l.message, logData...)
 		} else {
-			l.Log.Fatal(l.message)
+			l.log.Fatal(l.message)
 		}
 	case "panic":
 		if hasStructuredData {
-			l.Log.Panicw(l.message, logData...)
+			l.log.Panicw(l.message, logData...)
 		} else {
-			l.Log.Panic(l.message)
+			l.log.Panic(l.message)
 		}
 	}
 }
 
 // Close syncs all buffered logs and closes the logger.
-// It ignores any sync errors as recommended by zap documentation.
+// It ignores any sync errors as recommended by the underlying logger documentation.
 func (l Logger) Close() {
-	_ = l.Log.Sync()
+	_ = l.log.Sync()
 }
