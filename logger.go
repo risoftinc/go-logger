@@ -102,15 +102,6 @@ func prefix() string {
 	return "logger-" + time.Now().Format("2006-01-02")
 }
 
-// initLog creates a logger with default configuration.
-func initLog() *zap.SugaredLogger {
-	return initLogWithConfig(LoggerConfig{
-		OutputMode: OutputBoth,
-		LogLevel:   LevelDebug,
-		LogDir:     "logger",
-	})
-}
-
 // initLogWithConfig creates a logger with custom configuration.
 func initLogWithConfig(config LoggerConfig) *zap.SugaredLogger {
 	var cores []zapcore.Core
