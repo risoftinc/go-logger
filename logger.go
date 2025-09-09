@@ -45,12 +45,21 @@ type Logger struct {
 	requestIDKey string // Custom key for request ID in logs
 }
 
+// LogRotationConfig holds configuration options for log file rotation.
+type LogRotationConfig struct {
+	MaxSize    int  // Maximum size in megabytes before rotation (default: 10)
+	MaxBackups int  // Maximum number of old log files to retain (default: 3)
+	MaxAge     int  // Maximum number of days to retain old log files (default: 28)
+	Compress   bool // Whether to compress rotated log files (default: true)
+}
+
 // LoggerConfig holds configuration options for the logger.
 type LoggerConfig struct {
-	OutputMode   string // Output mode: OutputTerminal, OutputFile, or OutputBoth
-	LogLevel     string // Log level: LevelDebug, LevelInfo, LevelWarn, or LevelError
-	LogDir       string // Directory for log files
-	RequestIDKey string // Custom key for request ID in logs (default: "request-id")
+	OutputMode   string             // Output mode: OutputTerminal, OutputFile, or OutputBoth
+	LogLevel     string             // Log level: LevelDebug, LevelInfo, LevelWarn, or LevelError
+	LogDir       string             // Directory for log files
+	RequestIDKey string             // Custom key for request ID in logs (default: "request-id")
+	LogRotation  *LogRotationConfig // Log rotation configuration (optional, uses defaults if nil)
 }
 
 // NewLogger creates a new Logger instance with default configuration.
@@ -116,7 +125,7 @@ func initLogWithConfig(config LoggerConfig) *zap.SugaredLogger {
 
 	// Add file output if needed
 	if config.OutputMode == OutputFile || config.OutputMode == OutputBoth {
-		fileCore := zapcore.NewCore(encoder, getLogWriter(config.LogDir), level)
+		fileCore := zapcore.NewCore(encoder, getLogWriter(config.LogDir, config.LogRotation), level)
 		cores = append(cores, fileCore)
 	}
 
@@ -156,7 +165,7 @@ func getEncoder() zapcore.Encoder {
 	return zapcore.NewJSONEncoder(loggerConfig)
 }
 
-func getLogWriter(logDir string) zapcore.WriteSyncer {
+func getLogWriter(logDir string, rotationConfig *LogRotationConfig) zapcore.WriteSyncer {
 	// Create log directory if it doesn't exist
 	if err := os.MkdirAll(logDir, 0755); err != nil {
 		// If can't create directory, fallback to current directory
@@ -164,12 +173,32 @@ func getLogWriter(logDir string) zapcore.WriteSyncer {
 	}
 
 	logFile := logDir + "/" + prefix() + ".log"
+
+	// Set default rotation values if not provided
+	maxSize := 10
+	maxBackups := 3
+	maxAge := 28
+	compress := true
+
+	if rotationConfig != nil {
+		if rotationConfig.MaxSize > 0 {
+			maxSize = rotationConfig.MaxSize
+		}
+		if rotationConfig.MaxBackups >= 0 {
+			maxBackups = rotationConfig.MaxBackups
+		}
+		if rotationConfig.MaxAge > 0 {
+			maxAge = rotationConfig.MaxAge
+		}
+		compress = rotationConfig.Compress
+	}
+
 	ws := zapcore.AddSync(&lumberjack.Logger{
 		Filename:   logFile,
-		MaxSize:    10, // megabytes
-		MaxBackups: 3,
-		MaxAge:     28, // days
-		Compress:   true,
+		MaxSize:    maxSize, // megabytes
+		MaxBackups: maxBackups,
+		MaxAge:     maxAge, // days
+		Compress:   compress,
 	})
 	return ws
 }

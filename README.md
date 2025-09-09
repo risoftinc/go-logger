@@ -90,6 +90,36 @@ func main() {
 }
 ```
 
+### Log Rotation Configuration
+
+```go
+package main
+
+import (
+    "github.com/risoftinc/gologger"
+)
+
+func main() {
+    // Custom rotation configuration
+    config := gologger.LoggerConfig{
+        OutputMode: gologger.OutputBoth,
+        LogLevel:   gologger.LevelInfo,
+        LogDir:     "logs",
+        LogRotation: &gologger.LogRotationConfig{
+            MaxSize:    5,   // 5 MB instead of default 10 MB
+            MaxBackups: 5,   // Keep 5 backup files instead of default 3
+            MaxAge:     14,  // Keep files for 14 days instead of default 28
+            Compress:   false, // Don't compress rotated files
+        },
+    }
+
+    log := gologger.NewLoggerWithConfig(config)
+    defer log.Close()
+
+    log.Info("Custom rotation configuration example").Send()
+}
+```
+
 ### Logging with Data
 
 ```go
@@ -411,10 +441,18 @@ log.WithContext(ctx).
 
 ```go
 type gologger.LoggerConfig struct {
-    OutputMode    string // Output mode: OutputTerminal, OutputFile, or OutputBoth
-    LogLevel      string // Log level: LevelDebug, LevelInfo, LevelWarn, or LevelError
-    LogDir        string // Directory for log files
-    RequestIDKey  string // Custom key for request ID in logs (default: "request-id")
+    OutputMode    string              // Output mode: OutputTerminal, OutputFile, or OutputBoth
+    LogLevel      string              // Log level: LevelDebug, LevelInfo, LevelWarn, or LevelError
+    LogDir        string              // Directory for log files
+    RequestIDKey  string              // Custom key for request ID in logs (default: "request-id")
+    LogRotation   *LogRotationConfig  // Log rotation configuration (optional, uses defaults if nil)
+}
+
+type gologger.LogRotationConfig struct {
+    MaxSize    int  // Maximum size in megabytes before rotation (default: 10)
+    MaxBackups int  // Maximum number of old log files to retain (default: 3)
+    MaxAge     int  // Maximum number of days to retain old log files (default: 28)
+    Compress   bool // Whether to compress rotated log files (default: true)
 }
 ```
 
@@ -459,13 +497,66 @@ bgLogger := gologger.NewLoggerWithConfig(bgConfig)
 
 ## Log File Configuration
 
-Log files are automatically rotated with the following settings:
+### Default Rotation Settings
+
+Log files are automatically rotated with the following default settings:
 - Maximum file size: 10 MB
 - Maximum backup files: 3
 - Maximum age: 28 days
 - Compression: Enabled
 
 Log files are named with the pattern: `logger-YYYY-MM-DD.log`
+
+### Custom Rotation Configuration
+
+You can customize log rotation settings by providing a `LogRotationConfig`:
+
+```go
+// Custom rotation configuration
+config := gologger.LoggerConfig{
+    OutputMode: gologger.OutputBoth,
+    LogLevel:   gologger.LevelInfo,
+    LogDir:     "logs",
+    LogRotation: &gologger.LogRotationConfig{
+        MaxSize:    5,   // 5 MB instead of default 10 MB
+        MaxBackups: 5,   // Keep 5 backup files instead of default 3
+        MaxAge:     14,  // Keep files for 14 days instead of default 28
+        Compress:   false, // Don't compress rotated files
+    },
+}
+
+log := gologger.NewLoggerWithConfig(config)
+```
+
+### Partial Configuration
+
+You can set only specific rotation parameters, and the rest will use defaults:
+
+```go
+// Only set MaxSize, others will use defaults
+config := gologger.LoggerConfig{
+    OutputMode: gologger.OutputFile,
+    LogLevel:   gologger.LevelDebug,
+    LogDir:     "logs",
+    LogRotation: &gologger.LogRotationConfig{
+        MaxSize: 20, // Only this is set, others use defaults
+    },
+}
+```
+
+### Using Default Rotation
+
+If you don't specify `LogRotation` or set it to `nil`, all rotation settings will use the defaults:
+
+```go
+// Uses all default rotation settings
+config := gologger.LoggerConfig{
+    OutputMode: gologger.OutputBoth,
+    LogLevel:   gologger.LevelInfo,
+    LogDir:     "logs",
+    // LogRotation is nil, so defaults are used
+}
+```
 
 ## Performance & Thread Safety
 
