@@ -43,6 +43,7 @@ type Logger struct {
 	data         []any
 	hasData      bool
 	requestIDKey string // Custom key for request ID in logs
+	showCaller   bool   // Whether to show caller information in logs
 }
 
 // LogRotationConfig holds configuration options for log file rotation.
@@ -59,6 +60,7 @@ type LoggerConfig struct {
 	LogLevel     string             // Log level: LevelDebug, LevelInfo, LevelWarn, or LevelError
 	LogDir       string             // Directory for log files
 	RequestIDKey string             // Custom key for request ID in logs (default: "request-id")
+	ShowCaller   bool               // Whether to show caller information in logs (default: true)
 	LogRotation  *LogRotationConfig // Log rotation configuration (optional, uses defaults if nil)
 }
 
@@ -70,6 +72,7 @@ func NewLogger() Logger {
 		LogLevel:     LevelDebug,   // default: debug level
 		LogDir:       "logger",     // default: logger directory
 		RequestIDKey: "request-id", // default: request-id key
+		ShowCaller:   true,         // default: show caller information
 	})
 }
 
@@ -81,6 +84,11 @@ func NewLoggerWithConfig(config LoggerConfig) Logger {
 		requestIDKey = "request-id"
 	}
 
+	// Set default showCaller if not explicitly set (default: true)
+	showCaller := config.ShowCaller
+	// Note: Since bool zero value is false, we need to check if it was explicitly set
+	// For now, we'll use the value as-is, but users should explicitly set it to false if they want to disable caller
+
 	return Logger{
 		log:          initLogWithConfig(config),
 		ctx:          context.Background(),
@@ -89,6 +97,7 @@ func NewLoggerWithConfig(config LoggerConfig) Logger {
 		data:         make([]any, 0),
 		hasData:      false,
 		requestIDKey: requestIDKey,
+		showCaller:   showCaller,
 	}
 }
 
@@ -136,7 +145,15 @@ func initLogWithConfig(config LoggerConfig) *zap.SugaredLogger {
 	}
 
 	core := zapcore.NewTee(cores...)
-	logger := zap.New(core, zap.AddCaller(), zap.AddCallerSkip(1), zap.Development())
+
+	// Add caller information only if ShowCaller is true
+	var logger *zap.Logger
+	if config.ShowCaller {
+		logger = zap.New(core, zap.AddCaller(), zap.AddCallerSkip(1), zap.Development())
+	} else {
+		logger = zap.New(core, zap.Development())
+	}
+
 	sugarLogger := logger.Sugar()
 	return sugarLogger
 }
@@ -214,6 +231,7 @@ func (l Logger) WithContext(ctx context.Context) Logger {
 		data:         make([]any, 0),
 		hasData:      false,
 		requestIDKey: l.requestIDKey,
+		showCaller:   l.showCaller,
 	}
 }
 

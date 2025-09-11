@@ -369,6 +369,67 @@ func TestClose(t *testing.T) {
 	log.Close()
 }
 
+func TestShowCallerConfiguration(t *testing.T) {
+	// Test with ShowCaller = true (default)
+	configWithCaller := LoggerConfig{
+		OutputMode: OutputTerminal,
+		LogLevel:   LevelInfo,
+		LogDir:     "test_logs",
+		ShowCaller: true,
+	}
+
+	logWithCaller := NewLoggerWithConfig(configWithCaller)
+	defer logWithCaller.Close()
+
+	if !logWithCaller.showCaller {
+		t.Error("Expected showCaller to be true")
+	}
+
+	// Test with ShowCaller = false
+	configWithoutCaller := LoggerConfig{
+		OutputMode: OutputTerminal,
+		LogLevel:   LevelInfo,
+		LogDir:     "test_logs",
+		ShowCaller: false,
+	}
+
+	logWithoutCaller := NewLoggerWithConfig(configWithoutCaller)
+	defer logWithoutCaller.Close()
+
+	if logWithoutCaller.showCaller {
+		t.Error("Expected showCaller to be false")
+	}
+
+	// Test default behavior (should be true)
+	defaultLog := NewLogger()
+	defer defaultLog.Close()
+
+	if !defaultLog.showCaller {
+		t.Error("Expected default showCaller to be true")
+	}
+}
+
+func TestWithContextPreservesShowCaller(t *testing.T) {
+	// Test that WithContext preserves the showCaller configuration
+	config := LoggerConfig{
+		OutputMode: OutputTerminal,
+		LogLevel:   LevelInfo,
+		LogDir:     "test_logs",
+		ShowCaller: false,
+	}
+
+	log := NewLoggerWithConfig(config)
+	defer log.Close()
+
+	ctx := WithRequestID(context.Background(), "test-request")
+	contextLogger := log.WithContext(ctx)
+
+	if contextLogger.showCaller != log.showCaller {
+		t.Errorf("Expected contextLogger.showCaller (%v) to match log.showCaller (%v)",
+			contextLogger.showCaller, log.showCaller)
+	}
+}
+
 // Benchmark tests
 func BenchmarkSimpleLogging(b *testing.B) {
 	log := NewLogger()
