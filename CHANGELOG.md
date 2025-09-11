@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Features
 - 
 
-## [2.0.0] - 2025-09-12
+## [1.2.0] - 2025-09-12
 
 ### Changed
 - Changed module name from github.com to personal go.risoftinc.com
