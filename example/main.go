@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	// Example 1: Basic logging with method chaining
+	// Example 1: Basic logging with method chaining (with caller information by default)
 	log := gologger.NewLogger()
 	defer log.Close()
 
@@ -61,7 +61,20 @@ func main() {
 		Data("component", "system").
 		Send()
 
-	// Example 7: Simulating HTTP request flow
+	// Example 7: Logger configuration with caller control
+	// Create a logger without caller information
+	config := gologger.LoggerConfig{
+		OutputMode: gologger.OutputTerminal,
+		LogLevel:   gologger.LevelInfo,
+		LogDir:     "logger",
+		ShowCaller: false, // Disable caller information
+	}
+	logNoCaller := gologger.NewLoggerWithConfig(config)
+	defer logNoCaller.Close()
+
+	logNoCaller.Info("This log will not show caller information").Send()
+
+	// Example 8: Simulating HTTP request flow
 	simulateHTTPRequest(log)
 }
 

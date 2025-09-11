@@ -31,6 +31,7 @@ A structured logging solution for Go applications using zap gologger. This packa
 - **Multiple Output Modes**: Terminal, file, or both
 - **Configurable Log Levels**: Debug, Info, Warn, Error
 - **Structured Logging**: JSON format with timestamps and caller information
+- **Caller Configuration**: Control whether to show caller information in logs (default: enabled)
 - **Log Rotation**: Automatic log file rotation using lumberjack
 - **Request Tracing**: Support for request ID tracking with custom key configuration (commonly used for HTTP request tracing)
 - **Method Chaining**: Fluent API for clean, readable code
@@ -81,12 +82,44 @@ func main() {
         OutputMode: gologger.OutputFile,
         LogLevel:   gologger.LevelInfo,
         LogDir:     "logs",
+        ShowCaller: true, // Show caller information (default: true)
     }
     
     log := gologger.NewLoggerWithConfig(config)
     defer log.Close()
 
     log.Info("Application started with custom config").Send()
+}
+```
+
+### Caller Configuration
+
+```go
+package main
+
+import (
+    "go.risoftinc.com/gologger"
+)
+
+func main() {
+    // Logger with caller information (default behavior)
+    logWithCaller := gologger.NewLogger()
+    defer logWithCaller.Close()
+    
+    logWithCaller.Info("This log will show caller information").Send()
+
+    // Logger without caller information
+    configWithoutCaller := gologger.LoggerConfig{
+        OutputMode: gologger.OutputTerminal,
+        LogLevel:   gologger.LevelInfo,
+        LogDir:     "logger",
+        ShowCaller: false, // Disable caller information
+    }
+    
+    logWithoutCaller := gologger.NewLoggerWithConfig(configWithoutCaller)
+    defer logWithoutCaller.Close()
+    
+    logWithoutCaller.Info("This log will NOT show caller information").Send()
 }
 ```
 
@@ -405,6 +438,7 @@ log.WithContext(ctx).
 - `LogLevel string`: Log level (`LevelDebug`, `LevelInfo`, `LevelWarn`, `LevelError`)
 - `LogDir string`: Directory for log files
 - `RequestIDKey string`: Custom key for request ID in logs (default: `"request-id"`)
+- `ShowCaller bool`: Whether to show caller information in logs (default: `true`)
 
 ### Context Functions
 
@@ -445,6 +479,7 @@ type gologger.LoggerConfig struct {
     LogLevel      string              // Log level: LevelDebug, LevelInfo, LevelWarn, or LevelError
     LogDir        string              // Directory for log files
     RequestIDKey  string              // Custom key for request ID in logs (default: "request-id")
+    ShowCaller    bool                // Whether to show caller information in logs (default: true)
     LogRotation   *LogRotationConfig  // Log rotation configuration (optional, uses defaults if nil)
 }
 
